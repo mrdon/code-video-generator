@@ -1,0 +1,6 @@
+manim==0.11.0
+manim-voiceover[azure,gtts]
+pyglet 
+ffmpeg-python 
+wrapt 
+librosa 

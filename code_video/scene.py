@@ -18,6 +18,8 @@ from manim import Text
 from manim import UP
 from manim import WHITE
 from manim.animation.creation import Create
+from manim_voiceover import VoiceoverScene
+from manim_voiceover.services.gtts import GTTSService
 
 from code_video import comment_parser
 from code_video.autoscale import AutoScaled
@@ -32,7 +34,7 @@ from code_video.widgets import TextBox
 from code_video_cli import config
 
 
-class CodeScene(MovingCameraScene):
+class CodeScene(VoiceoverScene):
     """
     This class serves as a convenience class for animating code walkthroughs in as
     little work as possible. For more control, use `Code` or `PartialCode`
@@ -55,10 +57,21 @@ class CodeScene(MovingCameraScene):
         self.col_width = None
         self.music: Optional[BackgroundMusic] = None
         self.pauses = {}
+        self.set_speech_service(GTTSService(lang="en"))
 
     def setup(self):
         super().setup()
         self.col_width = self.renderer.camera.frame_width / 3
+
+    def add_subcaption(self, text: str, duration: float = 2, offset: float = 0):
+        """
+        Adds a subcaption to the scene
+
+        Args:
+            text: The text to display
+            position: The position of the text, either LEFT or RIGHT
+        """
+        pass
 
     def add_background_music(self, path: str) -> CodeScene:
         """
@@ -114,17 +127,25 @@ class CodeScene(MovingCameraScene):
         Waits until the next music beat, only works with `add_background_music`
         """
         if self.music:
-            adjusted_delay = self.music.next_beat(self.renderer.time + wait_time) - self.renderer.time
+            adjusted_delay = (
+                self.music.next_beat(self.renderer.time + wait_time)
+                - self.renderer.time
+            )
             self.wait(adjusted_delay)
         else:
             self.wait(wait_time)
 
-    def wait_until_measure(self, wait_time: Union[float, int], post: Union[float, int] = 0):
+    def wait_until_measure(
+        self, wait_time: Union[float, int], post: Union[float, int] = 0
+    ):
         """
         Waits until the next music measure, only works with `add_background_music`
         """
         if self.music:
-            adjusted_delay = self.music.next_measure(self.renderer.time + wait_time) - self.renderer.time
+            adjusted_delay = (
+                self.music.next_measure(self.renderer.time + wait_time)
+                - self.renderer.time
+            )
             adjusted_delay += post
             self.wait(adjusted_delay)
 
@@ -169,7 +190,9 @@ class CodeScene(MovingCameraScene):
             path, keep_comments=keep_comments, start_line=start_line, end_line=end_line
         )
 
-        tex = AutoScaled(PartialCode(code=code, start_line=start_line, style=self.code_theme))
+        tex = AutoScaled(
+            PartialCode(code=code, start_line=start_line, style=self.code_theme)
+        )
         if title is None:
             title = path
 
@@ -192,7 +215,9 @@ class CodeScene(MovingCameraScene):
             self.play(ApplyMethod(tex.full_size))
         return tex
 
-    def highlight_lines(self, code: Code, start: int = 1, end: int = -1, caption: Optional[str] = None):
+    def highlight_lines(
+        self, code: Code, start: int = 1, end: int = -1, caption: Optional[str] = None
+    ):
         """
         Convenience method for animating a code object.
 
@@ -230,8 +255,8 @@ class CodeScene(MovingCameraScene):
             callout.set_x(layout.get_x(3), LEFT)
             actions += [HighlightLines(code, start, end), FadeIn(callout)]
             self.caption = callout
-
-        self.play(*actions)
+        with self.voiceover(text=caption) as tracker:
+            self.play(*actions, run_time=tracker.duration)
 
         if not self.caption:
             self.play(ApplyMethod(code.full_size))
@@ -239,7 +264,9 @@ class CodeScene(MovingCameraScene):
             wait_time = len(self.caption.text) / (200 * 5 / 60)
             self.wait_until_measure(wait_time, -1.5)
 
-    def highlight_line(self, code: Code, number: int = -1, caption: Optional[str] = None):
+    def highlight_line(
+        self, code: Code, number: int = -1, caption: Optional[str] = None
+    ):
         """
         Convenience method for highlighting a single line
 
@@ -270,4 +297,6 @@ class CodeScene(MovingCameraScene):
         Args:
             path: The source code file path
         """
-        return AutoScaled(Code(path, font=self.code_font, style=self.code_theme, **kwargs))
+        return AutoScaled(
+            Code(path, font=self.code_font, style=self.code_theme, **kwargs)
+        )

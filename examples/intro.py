@@ -31,7 +31,6 @@ example_dir = dirname(__file__)
 
 
 def title_scene(scene):
-
     scene.add_background(f"{example_dir}/resources/blackboard.jpg")
     title = Text("How to use Code Video Generator", font="Helvetica")
     scene.play(Create(title))
@@ -98,7 +97,9 @@ def demo_commenting(scene: CodeScene):
         code,
         start=14,
         end=18,
-        caption="You can also highlight multiple " "lines by ending the block with '# " "end'",
+        caption="You can also highlight multiple "
+        "lines by ending the block with '# "
+        "end'",
     )
     scene.highlight_none(code)
     scene.play(FadeOut(code))
@@ -192,7 +193,9 @@ def goodbye(scene: CodeScene):
 
 class Main(CodeScene):
     def construct(self):
-        self.add_background_music(f"{example_dir}/resources/Pure Magic - Chris Haugen.mp3")
+        self.add_background_music(
+            f"{example_dir}/resources/Pure Magic - Chris Haugen.mp3"
+        )
         title_scene(self)
         overview(self)
         demo_commenting(self)
