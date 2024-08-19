@@ -19,8 +19,8 @@ from manim import Text
 from manim import UP
 from manim import VGroup
 from manim import WHITE
-from manim.mobject.geometry import DEFAULT_DASH_LENGTH
-from manim.mobject.geometry import Polygon
+from manim.constants import DEFAULT_DASH_LENGTH
+from manim.mobject.geometry import polygram
 from numba import np
 
 from code_video.widgets import DEFAULT_FONT
